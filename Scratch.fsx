@@ -106,20 +106,24 @@ let pterm =
 let pterm_ws = pterm .>> ws
 
 
-let parg, pargRef = createParserForwardedToRef<Expr, unit>()
+let opp = new OperatorPrecedenceParser<Expr,unit,unit>()
+let pexpr = opp.ExpressionParser
+opp.TermParser <- pterm <|> between (str_ws "(") (str_ws ")") pexpr
 
+opp.AddOperator(InfixOperator("==", ws, 1, Associativity.Left, fun x y -> BinOp (EqOp, x, y)))
+opp.AddOperator(InfixOperator(">=", ws, 1, Associativity.Left, fun x y -> BinOp (GeOp, x, y)))
+opp.AddOperator(InfixOperator(">", ws, 1, Associativity.Left, fun x y -> BinOp (GtOp, x, y)))
+opp.AddOperator(InfixOperator("<", ws, 1, Associativity.Left, fun x y -> BinOp (LtOp, x, y)))
+opp.AddOperator(InfixOperator("<=", ws, 1, Associativity.Left, fun x y -> BinOp (LeOp, x, y)))
 
-do pargRef :=
-    (attempt (pipe2 (pterm_ws .>> str_ws ">") parg (fun arg1 arg2 -> BinOp (GtOp, arg1, arg2))))
-    <|> pterm_ws
-
-test parg "$1.isFile"
-test parg "$1.Length > 200"
-
+test pexpr "$1.isFile"
+test pexpr "$1.Length > 200"
+test pexpr "\"/home/test\""
+test pexpr "$1.Length >= 200"
 
 let pargs = 
      between (pstring "(") (pstring ")")
-        (sepBy parg (str_ws ","))
+        (sepBy pexpr (str_ws ","))
 
 let evalToplevelFuncall funid args =
     match funid, args with
