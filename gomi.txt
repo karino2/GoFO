@@ -1,0 +1,34 @@
+
+"""
+
+let pop = str_ws ">"
+
+test pop ">"
+
+let pbinop = 
+
+    <|>
+    sepBy pterm_ws pop |>> 
+        (fun terms)
+    (pipe2 (pterm_ws .>> str_ws ">" ) pterm_ws (fun a1 a2 -> BinOp (GtOp, a1, a2)))
+
+let pbinop =
+    pipe2 (pterm_ws .>> str_ws ">") pterm_ws (fun arg1 arg2 -> BinOp (GtOp, arg1, arg2))
+
+
+"""
+
+
+"""
+    pipe2 (pfuncall .>> (str_ws "|")) (sepBy pPipedFuncall (str_ws "|"))
+        (fun valseq pipedfuncs ->
+            printfn "deb %A" pipedfuncs
+            (valseq, pipedfuncs) ||> List.fold (fun acc pfun -> evalPipedFun pfun acc)
+        )
+    <|> pfuncall
+"""
+
+"""
+let pfuncall = 
+    pipe2 identifier pargs evalToplevelFuncall
+"""
