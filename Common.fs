@@ -11,6 +11,12 @@ type Value =
 | Bool of bool
 | String of string
 
+type Row = Row of list<Value>
+
+let rowaccess row index =
+    let (Row vallist) = row
+    vallist.[index]
+
 type Variable = SpecialVariable of int // $1, $2, etc.
 
 type Atom =

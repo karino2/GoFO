@@ -6,17 +6,17 @@ open FParsec
 
 let callToplevelFun funid args =
     match funid, args with
-    | "ls", x::[] -> Eval.toString x |> Functions.ls
+    | "ls", x::[] -> Eval.toStringTopLevel x |> Functions.ls
     | _-> failwith("unknwon func")
 
 
-let callPipedFun (pfun:Funcall) (valseq:seq<Value>) =
+let callPipedFun (pfun:Funcall) (valseq:seq<Row>) =
     match pfun with
     | {Identifier="filter"; Args=arg::[]} -> Functions.filter arg valseq
     | {Identifier=x; Args=_} -> failwith($"Unsupported pieped function: {x}")
 
 
-let interpreter = pPipeline (fun (fcalls:list<Funcall>) ->
+let pinterpreter = pPipeline (fun (fcalls:list<Funcall>) ->
             // printfn "deb1 %A" fcalls
             match fcalls with
             |head::rest ->
@@ -28,4 +28,4 @@ let interpreter = pPipeline (fun (fcalls:list<Funcall>) ->
         )
 
 let eval script =
-    run interpreter script
+    run pinterpreter script

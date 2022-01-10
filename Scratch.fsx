@@ -62,3 +62,8 @@ temp.[1]
 
 temp.[1].Attributes = FileAttributes.Normal
 
+let temp2 = [1]
+
+temp2.[0]
+temp2.[1]
+
