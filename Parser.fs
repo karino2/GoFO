@@ -25,11 +25,26 @@ let pstringLiteral =
     between (pstring "\"") (pstring "\"")
             (manyChars (normalChar <|> escapedChar))
 
+// just yet another string literal.
+let pregexLiteral =
+    let normalChar = satisfy (fun c -> c <> '\\' && c <> '/')
+    let unescape c = match c with
+                     | 'n' -> '\n'
+                     | 'r' -> '\r'
+                     | 't' -> '\t'
+                     | c   -> c
+    let escapedChar = pstring "\\" >>. (anyOf "\\nrt\"" |>> unescape)
+    between (pstring "/") (pstring "/")
+            (manyChars (normalChar <|> escapedChar))
+
+
+
 let pterm =
     (pstringLiteral |>> (fun x -> Atom (String x)))
+    <|>(pregexLiteral |>> (fun x -> Atom (String x)))
     <|>(pfloat |>> (fun x -> Atom (Float x)))
     <|>(pint32 |>> (fun x -> Atom (Number x)))
-    <|> ((pstring "$") >>. (pipe2 pint32 ((str_ws ".") >>. pidentifier) (fun num fname ->  FieldAccess {target= Variable.SpecialVariable num; field=fname})))
+    <|> (attempt ((pstring "$") >>. (pipe2 pint32 ((str_ws ".") >>. pidentifier) (fun num fname ->  FieldAccess {target= Variable.SpecialVariable num; field=fname}))))
     <|> ((pstring "$") >>. (pint32 |>> (fun x ->  Atom (Variable (SpecialVariable x)))))
 
 let pterm_ws = pterm .>> ws
@@ -37,13 +52,14 @@ let pterm_ws = pterm .>> ws
 
 let opp = new OperatorPrecedenceParser<Expr,unit,unit>()
 let pexpr = opp.ExpressionParser
-opp.TermParser <- pterm <|> between (str_ws "(") (str_ws ")") pexpr
+opp.TermParser <- pterm_ws <|> between (str_ws "(") (str_ws ")") pexpr
 
 opp.AddOperator(InfixOperator("==", ws, 1, Associativity.Left, fun x y -> BinOp (EqOp, x, y)))
 opp.AddOperator(InfixOperator(">=", ws, 1, Associativity.Left, fun x y -> BinOp (GeOp, x, y)))
 opp.AddOperator(InfixOperator(">", ws, 1, Associativity.Left, fun x y -> BinOp (GtOp, x, y)))
 opp.AddOperator(InfixOperator("<", ws, 1, Associativity.Left, fun x y -> BinOp (LtOp, x, y)))
 opp.AddOperator(InfixOperator("<=", ws, 1, Associativity.Left, fun x y -> BinOp (LeOp, x, y)))
+opp.AddOperator(InfixOperator("~", ws, 1, Associativity.Left, fun x y -> BinOp (RegMatchOp, x, y)))
 
 let pargs = 
      between (pstring "(") (pstring ")")

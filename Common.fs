@@ -36,6 +36,7 @@ type BinOpType =
 | GtOp
 | LtOp 
 | LeOp 
+| RegMatchOp
 
 type FieldAccess = {target: Variable; field: string}
 

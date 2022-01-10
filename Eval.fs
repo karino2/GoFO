@@ -3,6 +3,7 @@ module Eval
 open Common
 open System
 open System.IO
+open System.Text.RegularExpressions
 
 
 
@@ -54,11 +55,41 @@ let evalGt curRow arg1 arg2  =
     let f2 = toFloat curRow arg2 
     f1 > f2
 
+
+// only .Name supported
+let fieldAccess (target:Value) (field:String) =
+    match target, field with
+    | File f, "Name" -> Value.String f.Name
+    | _ -> failwith($"NYI field access {field}")
+
+let stringFileFieldAccess field target =
+    match fieldAccess target field with
+    | Value.String x -> x
+    | _ -> failwith("Fail to cast field access to string")
+
+let toString curRow (expr:Expr) =
+    match expr with
+    | Atom (String x) -> x
+    | Atom (Variable x) ->
+        match special2value curRow x with
+        | Value.String y -> y
+        | _ -> failwith("NYI, unknown variable to String")
+    | FieldAccess {target=target; field=field} -> special2value curRow target |> stringFileFieldAccess field
+    | _ -> failwith("NYI in toString")
+
+// arg1 ~ arg2
+let evalMatch curRow arg1 arg2  =
+    let target = toString curRow arg1 
+    let pat = toString curRow arg2 
+    Regex(pat).Match(target).Success
+
+
 let toBoolean (curRow:Row) expr =
     match expr with
     | Atom _ -> failwith("atom is not boolean expr")
     | FieldAccess {target=sv; field=fname} -> booleanFieldAccess (special2value curRow sv) fname
     | BinOp (GtOp, arg1, arg2) -> evalGt curRow arg1 arg2
+    | BinOp (RegMatchOp, arg1, arg2) -> evalMatch curRow arg1 arg2
     | BinOp _ -> failwith("NYI binop")
 
 let atom2value (atom:Atom) =
@@ -68,11 +99,6 @@ let atom2value (atom:Atom) =
     | Float x -> Value.Float x 
     | Variable x -> failwith ("variable at atom2value, NYI")
 
-// only .Name supported
-let fieldAccess (target:Value) (field:String) =
-    match target, field with
-    | File f, "Name" -> Value.String f.Name
-    | _ -> failwith($"NYI field access {field}")
 
 let toValue (curRow:Row) expr =
     match expr with
