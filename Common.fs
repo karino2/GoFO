@@ -17,6 +17,10 @@ let rowaccess row index =
     let (Row vallist) = row
     vallist.[index]
 
+let addColumn row value =
+    let (Row vallist) = row
+    Row (List.append vallist [value])
+
 type Variable = SpecialVariable of int // $1, $2, etc.
 
 type Atom =

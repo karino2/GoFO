@@ -10,3 +10,7 @@ let ls path =
 let filter expr valseq =
     // printfn "filter called"
     valseq |> Seq.filter (fun row -> Eval.toBoolean row expr)
+
+let mutate expr valseq =
+    // printfn "filter called"
+    valseq |> Seq.map (fun row -> Eval.toValue row expr |> addColumn row)

@@ -13,6 +13,7 @@ let callToplevelFun funid args =
 let callPipedFun (pfun:Funcall) (valseq:seq<Row>) =
     match pfun with
     | {Identifier="filter"; Args=arg::[]} -> Functions.filter arg valseq
+    | {Identifier="mutate"; Args=arg::[]} -> Functions.mutate arg valseq
     | {Identifier=x; Args=_} -> failwith($"Unsupported pieped function: {x}")
 
 

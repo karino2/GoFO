@@ -61,3 +61,21 @@ let toBoolean (curRow:Row) expr =
     | BinOp (GtOp, arg1, arg2) -> evalGt curRow arg1 arg2
     | BinOp _ -> failwith("NYI binop")
 
+let atom2value (atom:Atom) =
+    match atom with
+    | String x -> Value.String x
+    | Number x -> Value.Number x
+    | Float x -> Value.Float x 
+    | Variable x -> failwith ("variable at atom2value, NYI")
+
+// only .Name supported
+let fieldAccess (target:Value) (field:String) =
+    match target, field with
+    | File f, "Name" -> Value.String f.Name
+    | _ -> failwith($"NYI field access {field}")
+
+let toValue (curRow:Row) expr =
+    match expr with
+    | Atom atom -> atom2value atom
+    | FieldAccess {target=sv; field=fname} -> fieldAccess (special2value curRow sv) fname
+    | BinOp _ -> failwith("NYI binop toValue")

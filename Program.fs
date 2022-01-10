@@ -1,7 +1,8 @@
 
 let target =  """ls("./")
 | filter($1.IsFile)
-| filter($1.Length > 400)"""
+| filter($1.Length > 400)
+| mutate($1.Name)"""
 
 
 [<EntryPoint>]

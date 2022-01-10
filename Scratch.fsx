@@ -67,3 +67,7 @@ let temp2 = [1]
 temp2.[0]
 temp2.[1]
 
+let temp3 = di.EnumerateFiles() |> Seq.take 1 |> Seq.toList
+temp3.[0].Name
+
+List.append [1; 2; 3] [4]
