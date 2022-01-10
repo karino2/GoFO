@@ -8,8 +8,8 @@ open System.IO
 
 let booleanFileFieldAccess field (fileSysInfo:FileSystemInfo) =
     match field with
-    | "isDirectory" -> fileSysInfo.Attributes = FileAttributes.Directory
-    | "isFile" -> fileSysInfo.Attributes = FileAttributes.Normal
+    | "IsDirectory" -> fileSysInfo.Attributes = FileAttributes.Directory
+    | "IsFile" -> fileSysInfo.Attributes = FileAttributes.Normal
     | _ -> failwith($"unkwon file boolean access: {field}")
 
 let floatFileFieldAccess field (fileSysInfo:FileSystemInfo) =

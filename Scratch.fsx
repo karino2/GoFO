@@ -24,7 +24,7 @@ test pexpr "\"/home/test\""
 test pexpr "$1.Length >= 200"
 
 
-test pfuncall "filter($1.isFile)"
+test pfuncall "filter($1.IsFile)"
 
 
 #load "Functions.fs"
@@ -35,13 +35,13 @@ Functions.ls "./" |> Seq.toList
 #load "Interpreter.fs"
 Interpreter.eval """ls("./")"""
 
-Interpreter.eval """ls("./") | filter($1.isFile)"""
+Interpreter.eval """ls("./") | filter($1.IsFile)"""
 Interpreter.eval """ls("./")
-| filter($1.isFile)
+| filter($1.IsFile)
 """
 
 Interpreter.eval """ls("./")
-| filter($1.isFile)
+| filter($1.IsFile)
 | filter($1.Length > 400)"""
 
 

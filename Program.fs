@@ -1,6 +1,6 @@
 
 let target =  """ls("./")
-| filter($1.isFile)
+| filter($1.IsFile)
 | filter($1.Length > 400)"""
 
 
