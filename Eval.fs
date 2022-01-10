@@ -19,12 +19,12 @@ let floatFileFieldAccess field (fileSysInfo:FileSystemInfo) =
     | _ -> failwith($"unkwon file boolean access: {field}")
 
 
-let special2value (curRow:Row) special =
-    let (SpecialVariable i) = special
+let variable2value (curRow:Row) variable =
+    let (SpecialVariable i) = variable
     rowaccess curRow (i-1)
 
 let variable2file (curRow: Row) (target:Variable) =
-    match special2value curRow target with
+    match variable2value curRow target with
     | (File f) -> f
     | _ -> failwith("NYI on variable2file")
 
@@ -57,13 +57,13 @@ let evalGt curRow arg1 arg2  =
 
 
 // only .Name supported
-let fieldAccess (target:Value) (field:String) =
+let fieldAccess (field:String) (target:Value) =
     match target, field with
     | File f, "Name" -> Value.String f.Name
     | _ -> failwith($"NYI field access {field}")
 
 let stringFileFieldAccess field target =
-    match fieldAccess target field with
+    match fieldAccess field target with
     | Value.String x -> x
     | _ -> failwith("Fail to cast field access to string")
 
@@ -71,10 +71,10 @@ let toString curRow (expr:Expr) =
     match expr with
     | Atom (String x) -> x
     | Atom (Variable x) ->
-        match special2value curRow x with
+        match variable2value curRow x with
         | Value.String y -> y
         | _ -> failwith("NYI, unknown variable to String")
-    | FieldAccess {target=target; field=field} -> special2value curRow target |> stringFileFieldAccess field
+    | FieldAccess {target=target; field=field} -> variable2value curRow target |> stringFileFieldAccess field
     | _ -> failwith("NYI in toString")
 
 // arg1 ~ arg2
@@ -87,7 +87,7 @@ let evalMatch curRow arg1 arg2  =
 let toBoolean (curRow:Row) expr =
     match expr with
     | Atom _ -> failwith("atom is not boolean expr")
-    | FieldAccess {target=sv; field=fname} -> booleanFieldAccess (special2value curRow sv) fname
+    | FieldAccess {target=sv; field=fname} -> booleanFieldAccess (variable2value curRow sv) fname
     | BinOp (GtOp, arg1, arg2) -> evalGt curRow arg1 arg2
     | BinOp (RegMatchOp, arg1, arg2) -> evalMatch curRow arg1 arg2
     | BinOp _ -> failwith("NYI binop")
@@ -103,5 +103,5 @@ let atom2value (atom:Atom) =
 let toValue (curRow:Row) expr =
     match expr with
     | Atom atom -> atom2value atom
-    | FieldAccess {target=sv; field=fname} -> fieldAccess (special2value curRow sv) fname
+    | FieldAccess {target=sv; field=fname} ->  variable2value curRow sv |> fieldAccess fname
     | BinOp _ -> failwith("NYI binop toValue")
